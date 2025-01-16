@@ -42,6 +42,7 @@ public class Main {
         System.out.println("Все Epic: \n" + taskManager.getAllEpicsList());
         System.out.println("Все SubTask: \n" + taskManager.getAllSubTasksList());
 
+
         //Обновление статуса у subTask3
         SubTask subTask3Updated = new SubTask("SubTask 3-Updated", "SubTask 3-Updated description",
                 Status.DONE, epic2.getId(), subTask3.getId());

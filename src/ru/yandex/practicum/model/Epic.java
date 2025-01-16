@@ -5,26 +5,26 @@ import ru.yandex.practicum.service.Status;
 import java.util.ArrayList;
 
 public class Epic extends Task{
-    private ArrayList<SubTask> subTasks;
+    private ArrayList<Integer> subTaskIds;
 
     public Epic(String title, String description) {
         super(title, description, Status.NEW);
-        subTasks = new ArrayList<>();
+        subTaskIds = new ArrayList<>();
     }
 
-    public void setSubTask(SubTask subTask) {
-        this.subTasks.add(subTask);
+    public void setSubTask(Integer subTaskId) {
+        this.subTaskIds.add(subTaskId);
     }
 
-    public ArrayList<SubTask> getSubTasks() {
-        return subTasks;
+    public ArrayList<Integer> getSubTaskIds() {
+        return subTaskIds;
     }
 
-    public void updateEpicStatus(){
+    public void updateEpicStatus(ArrayList<SubTask> subTasks){
         int cntStatusNEW = 0;
         int cntStatusDONE = 0;
 
-        for (SubTask subTask : this.getSubTasks()){
+        for (SubTask subTask : subTasks){
             if (subTask.getStatus().equals(Status.NEW))
                 cntStatusNEW++;
             if (subTask.getStatus().equals(Status.DONE))
@@ -38,23 +38,18 @@ public class Epic extends Task{
             setStatus(Status.IN_PROGRESS);
     }
 
-    public void removeSubTaskById(int id) {
-        for (SubTask subTask : subTasks){
-            if(subTask.id.equals(id)){
-                subTasks.remove(subTask);
-                return;
-            }
-        }
+    public void removeSubTaskById(Integer id) {
+        subTaskIds.remove(id);
     }
 
     public void removeSubTasks(){
-        subTasks.clear();
+        subTaskIds.clear();
     }
 
     @Override
     public String toString() {
         return "Epic{" +
-                "subTasks=" + subTasks +
+                "subTasks=" + subTaskIds +
                 ", id=" + id +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
