@@ -20,24 +20,6 @@ public class Epic extends Task{
         return subTaskIds;
     }
 
-    public void updateEpicStatus(ArrayList<SubTask> subTasks){
-        int cntStatusNEW = 0;
-        int cntStatusDONE = 0;
-
-        for (SubTask subTask : subTasks){
-            if (subTask.getStatus().equals(Status.NEW))
-                cntStatusNEW++;
-            if (subTask.getStatus().equals(Status.DONE))
-                cntStatusDONE++;
-        }
-        if(subTasks.size() == 0 || subTasks.size() == cntStatusNEW)
-            setStatus(Status.NEW);
-        else if (subTasks.size() == cntStatusDONE)
-            setStatus(Status.DONE);
-        else
-            setStatus(Status.IN_PROGRESS);
-    }
-
     public void removeSubTaskById(Integer id) {
         subTaskIds.remove(id);
     }

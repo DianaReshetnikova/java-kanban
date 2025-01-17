@@ -12,6 +12,7 @@ public class Main {
         //Создание task1 и task2 задач и обновление task1
         Task task1 = new Task("Task 1", "Task 1 description", Status.NEW);
         task1 = taskManager.createTask(task1);
+        task1 = taskManager.createTask(task1);
         System.out.println("Задача создана:\n" + taskManager.getTaskById(task1.getId()));
 
         Task task2 = new Task("Task 2", "Task 2 description", Status.NEW);
