@@ -4,11 +4,16 @@ import ru.yandex.practicum.service.Status;
 
 import java.util.ArrayList;
 
-public class Epic extends Task{
-    private ArrayList<Integer> subTaskIds;
+public class Epic extends Task {
+    private final ArrayList<Integer> subTaskIds;
 
     public Epic(String title, String description) {
         super(title, description, Status.NEW);
+        subTaskIds = new ArrayList<>();
+    }
+
+    public Epic(String title, String description, int id) {
+        super(title, description, Status.NEW, id);
         subTaskIds = new ArrayList<>();
     }
 
@@ -24,7 +29,7 @@ public class Epic extends Task{
         subTaskIds.remove(id);
     }
 
-    public void removeSubTasks(){
+    public void removeSubTasks() {
         subTaskIds.clear();
     }
 
