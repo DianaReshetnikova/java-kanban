@@ -3,9 +3,10 @@ package ru.yandex.practicum.model;
 import ru.yandex.practicum.service.Status;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Epic extends Task {
-    private final ArrayList<Integer> subTaskIds;
+    private final List<Integer> subTaskIds;
 
     public Epic(String title, String description) {
         super(title, description, Status.NEW);
@@ -21,7 +22,7 @@ public class Epic extends Task {
         this.subTaskIds.add(subTaskId);
     }
 
-    public ArrayList<Integer> getSubTaskIds() {
+    public List<Integer> getSubTaskIds() {
         return subTaskIds;
     }
 

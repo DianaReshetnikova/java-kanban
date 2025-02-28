@@ -3,9 +3,14 @@ package ru.yandex.practicum.service;
 import ru.yandex.practicum.model.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class InMemoryHistoryManager implements HistoryManager{
-    private final ArrayList<Task> tasksHistory;
+/* InMemoryHistoryManager - класс-менеджер, хранящий информацию о последних 10 просмотренных задачах.
+Просмотром считается вызов тех методов, которые получают задачу по идентификатору, —
+getTaskById(int id), getSubtaskById(int id) и getEpicById(int id). */
+
+public class InMemoryHistoryManager implements HistoryManager {
+    private final List<Task> tasksHistory;
 
     public InMemoryHistoryManager() {
         tasksHistory = new ArrayList<>(10);
@@ -23,7 +28,7 @@ public class InMemoryHistoryManager implements HistoryManager{
     }
 
     @Override
-    public ArrayList<Task> getHistory() {
+    public List<Task> getHistory() {
         return tasksHistory;
     }
 }

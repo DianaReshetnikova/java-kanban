@@ -5,7 +5,12 @@ import ru.yandex.practicum.model.SubTask;
 import ru.yandex.practicum.model.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 
+/* TaskManager - интерфейс, содержащий список методов,
+ позволяющих управлять различными типами задач (создание, хранение, измнение, удаление и пр.),
+ которые должны быть у любого объекта-менеджера.
+ Хранение информации осуществляется в классе, который реализует TaskManager. */
 
 public interface TaskManager {
     Task createTask(Task newTask);
@@ -22,11 +27,11 @@ public interface TaskManager {
     SubTask updateSubTask(SubTask newSubTask);
 
 
-    ArrayList<Task> getAllTasksList();
+    List<Task> getAllTasksList();
 
-    ArrayList<Epic> getAllEpicsList();
+    List<Epic> getAllEpicsList();
 
-    ArrayList<SubTask> getAllSubTasksList();
+    List<SubTask> getAllSubTasksList();
 
 
     void deleteAllTasks();
@@ -49,7 +54,7 @@ public interface TaskManager {
 
     void deleteSubTaskById(int subTaskId);
 
-    ArrayList<SubTask> getSubTasksOfEpicById(int epicId);
+    List<SubTask> getSubTasksOfEpicById(int epicId);
 
-    ArrayList<Task> getHistory();
+    List<Task> getHistory();
 }

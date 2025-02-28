@@ -7,6 +7,7 @@ import ru.yandex.practicum.model.SubTask;
 import ru.yandex.practicum.model.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,7 +36,7 @@ class InMemoryTaskManagerTest {
         assertNotNull(savedTask, "Задача не возвращается");
         assertEquals(task1, savedTask, "Задачи не совпадают");
 
-        ArrayList<Task> arrTasks = taskManager.getAllTasksList();
+        List<Task> arrTasks = taskManager.getAllTasksList();
         assertNotNull(arrTasks, "Список задач не возвращается");
         assertEquals(1, arrTasks.size(), "Количество созданных задач должно быть = 1");
     }
@@ -52,7 +53,7 @@ class InMemoryTaskManagerTest {
         Task task2 = new Task("Task 2", "Task 2 description", Status.NEW);
         taskManager.createTask(task2);
 
-        ArrayList<Task> arrTasks = taskManager.getAllTasksList();
+        List<Task> arrTasks = taskManager.getAllTasksList();
         assertNotNull(arrTasks, "Список задач не возвращается");
         assertEquals(2, arrTasks.size(), "Количество задач не равно двум");
 
@@ -80,7 +81,7 @@ class InMemoryTaskManagerTest {
         assertNotNull(savedEpic, "Эпик не возвращается");
         assertEquals(epic1, savedEpic, "Эпики не совпадают");
 
-        ArrayList<Epic> arrEpics = taskManager.getAllEpicsList();
+        List<Epic> arrEpics = taskManager.getAllEpicsList();
         assertNotNull(arrEpics, "Список эпиков не возвращается");
         assertEquals(1, arrEpics.size(), "Количество созданных эпиков должно быть = 1");
     }
@@ -97,7 +98,7 @@ class InMemoryTaskManagerTest {
         Epic epic2 = new Epic("Epic 2", "Epic 2 description");
         taskManager.createEpic(epic2);
 
-        ArrayList<Epic> arrEpics = taskManager.getAllEpicsList();
+        List<Epic> arrEpics = taskManager.getAllEpicsList();
         assertNotNull(arrEpics, "Список эпиков не возвращается");
         assertEquals(2, arrEpics.size(), "Количество эпиков не равно двум");
 
@@ -130,7 +131,7 @@ class InMemoryTaskManagerTest {
         assertNotNull(savedSubTask, "Подзадача не возвращается");
         assertEquals(subTask1, savedSubTask, "Подзадачи не совпадают");
 
-        ArrayList<SubTask> arrSubTasks = taskManager.getAllSubTasksList();
+        List<SubTask> arrSubTasks = taskManager.getAllSubTasksList();
         assertNotNull(arrSubTasks, "Список подзадач не возвращается");
         assertEquals(1, arrSubTasks.size(), "Количество созданных подзадач должно быть = 1");
     }
@@ -147,7 +148,7 @@ class InMemoryTaskManagerTest {
         SubTask subTask2 = new SubTask("SubTask 2", "SubTask 2 description", Status.NEW, epic1.getId());
         taskManager.createSubTask(subTask2);
 
-        ArrayList<SubTask> arrSubTasks = taskManager.getAllSubTasksList();
+        List<SubTask> arrSubTasks = taskManager.getAllSubTasksList();
         assertNotNull(arrSubTasks, "Список подзадач не возвращается");
         assertEquals(2, arrSubTasks.size(), "Количество подзадач не равно двум");
 
