@@ -157,5 +157,20 @@ class InMemoryTaskManagerTest {
         assertEquals(0, arrSubTasks.size(), "Подзадачи не были удалены");
     }
 
+    @Test
+    void shouldDeleteFromEpics_DeletedSubTasksId() {
+        var subTasksOfEpic1 = taskManager.getSubTasksOfEpicById(epic1.getId());
+
+        assertEquals(1, subTasksOfEpic1.size(), "У эпик1 должна быть одна подзадача");
+
+        assertNotNull(subTasksOfEpic1.getFirst(), "У эпик1 должна быть подзадача != null");
+
+        assertEquals(subTask1, subTasksOfEpic1.getFirst(), "У эпик1 должна быть подзадача subTask1");
+
+
+        taskManager.deleteSubTaskById(subTask1.getId());
+        subTasksOfEpic1 = taskManager.getSubTasksOfEpicById(epic1.getId());
+        assertEquals(0, subTasksOfEpic1.size(), "У эпик1 не должно быть подзадачи");
+    }
 
 }

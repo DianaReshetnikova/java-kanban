@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface HistoryManager {
     void add(Task task);
-
+    void remove(int id);//метод для удаления задачи из истории если она просмотрена > 1 раза
     List<Task> getHistory();
 }

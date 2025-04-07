@@ -15,7 +15,7 @@ class InMemoryHistoryManagerTest {
     SubTask subTask1, subTask2, subTask3, subTask4;
 
     @BeforeEach
-    void createTasks(){
+    void createTasks() {
         task1 = new Task("Task 1", "Task 1 description", Status.NEW);
         task1 = taskManager.createTask(task1);
 
@@ -47,56 +47,48 @@ class InMemoryHistoryManagerTest {
 
         subTask4 = new SubTask("SubTask 4", "SubTask 4 description", Status.IN_PROGRESS, epic2.getId());
         subTask4 = taskManager.createSubTask(subTask4);
+
     }
 
-
+    //Проверяет добавление задач, запрошенных по getTaskById, getEpicById, getSubTaskById, в список истории
+    // и корректность последовательности вывода истории просмотров
     @Test
-    void shouldPrintFirst10Tasks() {
+    void shouldFillHistoryTasksHashMap() {
+        var arr = taskManager.getHistory();
+        assertEquals(0, arr.size(), "Список истории задач должен быть пустым");
         taskManager.getTaskById(task1.getId());
         taskManager.getTaskById(task2.getId());
         taskManager.getTaskById(task3.getId());
 
-        taskManager.getEpicById(epic1.getId());
-        taskManager.getEpicById(epic2.getId());
-        taskManager.getEpicById(epic3.getId());
+        arr = taskManager.getHistory();
+        assertNotNull(arr, "Список истории задач не должен быть = null");
 
-        taskManager.getSubTaskById(subTask1.getId());
-        taskManager.getSubTaskById(subTask2.getId());
-        taskManager.getSubTaskById(subTask3.getId());
-        taskManager.getSubTaskById(subTask4.getId());
+        assertEquals(3, arr.size(), "Список должен состоять из 3 элементов");
 
-        var arr = taskManager.getHistory();
-        assertNotNull(arr, "Список истории задач не возвращается");
-        //проверяем первый элемент в списке и последний
-        assertEquals(task1.getTitle(), arr.getFirst().getTitle(), "Задачи не совпадают");
-        assertEquals(subTask4.getTitle(), arr.getLast().getTitle(), "Задачи не совпадают");
+        assertEquals(task1, arr.getFirst(), "Задачи не совпадают");
+        assertEquals(task2, arr.get(1), "Задачи не совпадают");
+        assertEquals(task3, arr.getLast(), "Задачи не совпадают");
     }
 
+    //Если какую-либо задачу посещали несколько раз, то в истории должен остаться только её последний просмотр.
+    // Предыдущий должен быть удалён.
     @Test
-    void shouldPrint10TasksAfterAdding11Task_GetHistory(){
+    void shouldRemoveOldTaskEntrуInHistory() {
+        var arr = taskManager.getHistory();
+        assertEquals(0, arr.size(), "Список истории задач должен быть пустым");
+
         taskManager.getTaskById(task1.getId());
         taskManager.getTaskById(task2.getId());
-        taskManager.getTaskById(task3.getId());
+        taskManager.getTaskById(task1.getId());
+        //в списке должен быть порядок: task1, task2. Затем последний вызов task1 удаляет первую запись task1
+        //Итого: task2, task1
 
-        taskManager.getEpicById(epic1.getId());
-        taskManager.getEpicById(epic2.getId());
-        taskManager.getEpicById(epic3.getId());
+        arr = taskManager.getHistory();
+        assertNotNull(arr, "Список истории задач не должен быть = null");
 
-        taskManager.getSubTaskById(subTask1.getId());
-        taskManager.getSubTaskById(subTask2.getId());
-        taskManager.getSubTaskById(subTask3.getId());
-        taskManager.getSubTaskById(subTask4.getId());
+        assertEquals(2, arr.size(), "Список должен состоять из 2 элементов");
 
-        //добавляем 11 задачу
-        SubTask subTask5 = new SubTask("SubTask 5", "SubTask 5 description", Status.IN_PROGRESS, epic2.getId());
-        subTask5 = taskManager.createSubTask(subTask5);
-
-        taskManager.getSubTaskById(subTask5.getId());
-
-        var arr = taskManager.getHistory();
-        assertNotNull(arr, "Список истории задач не возвращается");
-        //проверяем первый элемент в списке, последний и эпик1
-        assertEquals(task2.getTitle(), arr.getFirst().getTitle(), "Задачи не совпадают");
-        assertEquals(subTask5.getTitle(), arr.getLast().getTitle(), "Задачи не совпадают");
+        assertEquals(task2, arr.getFirst(), "Первым должен идти task2");
+        assertEquals(task1, arr.getLast(), "Последним должен идти task1");
     }
 }
