@@ -2,7 +2,7 @@ package ru.yandex.practicum.model;
 
 import ru.yandex.practicum.service.Status;
 
-public class SubTask extends Task{
+public class SubTask extends Task {
     private Integer epicId;
 
     public SubTask(String title, String description, Status status, int epicId) {
