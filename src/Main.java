@@ -1,7 +1,6 @@
 import ru.yandex.practicum.model.Task;
 import ru.yandex.practicum.model.Epic;
 import ru.yandex.practicum.model.SubTask;
-import ru.yandex.practicum.service.HistoryManager;
 import ru.yandex.practicum.service.Managers;
 import ru.yandex.practicum.service.Status;
 import ru.yandex.practicum.service.TaskManager;
@@ -52,7 +51,7 @@ public class Main {
         printAllTasks(taskManager);
     }
 
-    private static void printHistoryTasks(TaskManager manager){
+    private static void printHistoryTasks(TaskManager manager) {
         System.out.println("_____История просмотра задач_____");
         for (var item : manager.getHistory()) {
             System.out.println(item);
