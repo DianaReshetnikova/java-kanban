@@ -16,7 +16,7 @@ public class InMemoryHistoryManager implements HistoryManager {
     /* Ключ - id задачи, просмотр которой требуется удалить, значение — место просмотра этой задачи в списке,
     то есть узел связного списка.
     С помощью номера задачи можно получить соответствующий ему узел связного списка и удалить его за O(1).*/
-    private Map<Integer, Node> tasksHistoryMap = new HashMap<>();
+    private final Map<Integer, Node> tasksHistoryMap;
     private Node head;
     private Node tail;
 
@@ -46,27 +46,6 @@ public class InMemoryHistoryManager implements HistoryManager {
         return getTasks();
     }
 
-    //Метод принимает объект Node — узел связного списка — и удаляет его из списка
-    private void removeNode(Node node) {
-        if (node == null) return;
-
-        if (node.next != null && node.prev != null) {
-            node.prev.next = node.next;
-            node.next.prev = node.prev;
-        } else if (node.next != null) {
-            node.next.prev = null;
-            head = node.next;
-        } else if (node.prev != null) {
-            node.prev.next = null;
-            tail = node.prev;
-        } else {
-            head = null;
-            tail = null;
-        }
-
-        tasksHistoryMap.remove(node.task.getId());
-    }
-
     // linkLast будет добавлять задачу в конец списка HashMap<Integer, Node>
     public void linkLast(Task task) {
         if (task == null) return;
@@ -91,5 +70,26 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
 
         return resultTasks;
+    }
+
+    //Метод принимает объект Node — узел связного списка — и удаляет его из списка
+    private void removeNode(Node node) {
+        if (node == null) return;
+
+        if (node.next != null && node.prev != null) {
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
+        } else if (node.next != null) {
+            node.next.prev = null;
+            head = node.next;
+        } else if (node.prev != null) {
+            node.prev.next = null;
+            tail = node.prev;
+        } else {
+            head = null;
+            tail = null;
+        }
+
+        tasksHistoryMap.remove(node.task.getId());
     }
 }
