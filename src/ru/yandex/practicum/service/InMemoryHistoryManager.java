@@ -3,32 +3,107 @@ package ru.yandex.practicum.service;
 import ru.yandex.practicum.model.Task;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-/* InMemoryHistoryManager - класс-менеджер, хранящий информацию о последних 10 просмотренных задачах.
+/* InMemoryHistoryManager - класс-менеджер, хранящий информацию о последних просмотренных задачах.
 Просмотром считается вызов тех методов, которые получают задачу по идентификатору, —
 getTaskById(int id), getSubtaskById(int id) и getEpicById(int id). */
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private final List<Task> tasksHistory;
+
+    /* Ключ - id задачи, просмотр которой требуется удалить, значение — место просмотра этой задачи в списке,
+    то есть узел связного списка.
+    С помощью номера задачи можно получить соответствующий ему узел связного списка и удалить его за O(1).*/
+    private final Map<Integer, Node> tasksHistoryMap;
+    private Node head;
+    private Node tail;
 
     public InMemoryHistoryManager() {
-        tasksHistory = new ArrayList<>(10);
+        tasksHistoryMap = new HashMap<>();
     }
 
     @Override
     public void add(Task task) {
         if (task != null) {
-            if (tasksHistory.size() == 10) {
-                tasksHistory.removeFirst();
+            if (tasksHistoryMap.containsKey(task.getId())) {
+                remove(task.getId());
             }
-
-            tasksHistory.addLast(task);
+            linkLast(task);
         }
+    }
+
+    // Удаляет задачи, которые уже были просмотрены, из истории просмотра
+    // (убирает дубли, оставляет последний просмотр)
+    @Override
+    public void remove(int id) {
+        removeNode(tasksHistoryMap.get(id));
     }
 
     @Override
     public List<Task> getHistory() {
-        return tasksHistory;
+        return getTasks();
+    }
+
+    // linkLast будет добавлять задачу в конец списка HashMap<Integer, Node>
+    public void linkLast(Task task) {
+        if (task == null) return;
+
+        final Node oldTail = tail;
+        tail = new Node(task, null, tail);
+        if (oldTail == null) {
+            head = tail;
+        } else {
+            oldTail.next = tail;
+        }
+        tasksHistoryMap.put(task.getId(), tail);
+    }
+
+    // getTasks собирает все задачи из узлов в HashMap<Integer, Node> и формирует их в обычный ArrayList
+    public List<Task> getTasks() {
+        List<Task> resultTasks = new ArrayList<>();
+        Node node = head;
+        while (node != null) {
+            resultTasks.add(node.task);
+            node = node.next;
+        }
+
+        return resultTasks;
+    }
+
+    //Метод принимает объект Node — узел связного списка — и удаляет его из списка
+    private void removeNode(Node node) {
+        if (node == null) return;
+
+        if (node.next != null && node.prev != null) {
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
+        } else if (node.next != null) {
+            node.next.prev = null;
+            head = node.next;
+        } else if (node.prev != null) {
+            node.prev.next = null;
+            tail = node.prev;
+        } else {
+            head = null;
+            tail = null;
+        }
+
+        tasksHistoryMap.remove(node.task.getId());
+    }
+
+    //Класс Node описывает упрощенный узел двусвязного списка LinkedList
+    static class Node {
+        Task task;
+        Node next;
+        Node prev;
+
+        public Node(Task task, Node next, Node prev) {
+            this.task = task;
+            this.next = next;
+            this.prev = prev;
+        }
     }
 }
+
