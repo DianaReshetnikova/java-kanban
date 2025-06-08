@@ -1,6 +1,7 @@
 package ru.yandex.practicum.model;
 
 import ru.yandex.practicum.service.Status;
+import ru.yandex.practicum.service.TaskType;
 
 public class SubTask extends Task {
     private Integer epicId;
@@ -21,5 +22,9 @@ public class SubTask extends Task {
 
     public void setEpicId(Integer epicId) {
         this.epicId = epicId;
+    }
+
+    public TaskType getTaskType() {
+        return TaskType.SUBTASK;
     }
 }

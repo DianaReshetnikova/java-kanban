@@ -2,10 +2,7 @@ package ru.yandex.practicum.service;
 
 import ru.yandex.practicum.model.Task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /* InMemoryHistoryManager - класс-менеджер, хранящий информацию о последних просмотренных задачах.
 Просмотром считается вызов тех методов, которые получают задачу по идентификатору, —
