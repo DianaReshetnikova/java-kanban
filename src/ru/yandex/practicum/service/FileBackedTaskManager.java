@@ -16,10 +16,10 @@ import java.util.List;
  * будет автоматически сохранять все задачи и их состояние в специальный файл в папке проекта.
  */
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
-    private static Path filePath;
+    private final Path filePath;
 
     public FileBackedTaskManager(Path filePath) {
-        FileBackedTaskManager.filePath = filePath;
+        this.filePath = filePath;
     }
 
 
@@ -150,28 +150,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 
 
-    //Cохраняет текущее состояние менеджера (задачи, подзадачи и эпики) в указанный файл.
-    public void save() throws ManagerSaveException {
-        try (BufferedWriter bf = new BufferedWriter(new FileWriter(filePath.getFileName().toString()))) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("id,type,name,status,description,epic\n");
-
-            for (var item : getAllTasksList())
-                sb.append(toString(item)).append("\n");
-
-            for (var item : getAllEpicsList())
-                sb.append(toString(item)).append("\n");
-
-            for (var item : getAllSubTasksList())
-                sb.append(toString(item)).append("\n");
-
-            bf.write(sb.toString());
-
-        } catch (IOException ex) {
-            throw new ManagerSaveException("Возникла ошибка при записи в файл: " + filePath.getFileName().toString());
-        }
-    }
-
     //Восстанавливает данные менеджера из файла при запуске программы
     public static FileBackedTaskManager loadFromFile(Path filePath) {
         FileBackedTaskManager fileBackedManager = new FileBackedTaskManager(filePath);
@@ -204,6 +182,28 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         }
 
         return fileBackedManager;
+    }
+
+    //Cохраняет текущее состояние менеджера (задачи, подзадачи и эпики) в указанный файл.
+    private void save() {
+        try (BufferedWriter bf = new BufferedWriter(new FileWriter(filePath.getFileName().toString()))) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("id,type,name,status,description,epic\n");
+
+            for (var item : getAllTasksList())
+                sb.append(toString(item)).append("\n");
+
+            for (var item : getAllEpicsList())
+                sb.append(toString(item)).append("\n");
+
+            for (var item : getAllSubTasksList())
+                sb.append(toString(item)).append("\n");
+
+            bf.write(sb.toString());
+
+        } catch (IOException ex) {
+            throw new ManagerSaveException("Возникла ошибка при записи в файл: " + filePath.getFileName().toString());
+        }
     }
 
     //Переводит объект Task в строку
@@ -241,59 +241,5 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
             case SUBTASK -> new SubTask(name, description, status, epicId, id);
             case TASK -> new Task(name, description, status, id);
         };
-    }
-
-
-    public static void main(String[] args) {
-
-        try {
-            Path filePath = Paths.get("TasksList.csv");
-            FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(filePath);
-            if (!Files.exists(filePath)) {
-                Files.createFile(filePath);
-            } else {
-                fileBackedTaskManager = loadFromFile(filePath);
-                System.out.println("Данные, полученные из файла:");
-                printAllTasks(fileBackedTaskManager);
-            }
-
-
-            Task task1 = new Task("Task 1", "Task 1 description", Status.NEW);
-            task1 = fileBackedTaskManager.createTask(task1);
-
-            Epic epic1 = new Epic("Epic 1", "Epic 1 description");
-            epic1 = fileBackedTaskManager.createEpic(epic1);
-
-            SubTask subTask1 = new SubTask("SubTask 1", "SubTask 1 description", Status.DONE, epic1.getId());
-            subTask1 = fileBackedTaskManager.createSubTask(subTask1);
-            SubTask subTask2 = new SubTask("SubTask 2", "SubTask 2 description", Status.NEW, epic1.getId());
-            subTask2 = fileBackedTaskManager.createSubTask(subTask2);
-
-            System.out.println("\n_______Данные, получнные из файла и новые добавленные задачи_______\n");
-            printAllTasks(fileBackedTaskManager);
-
-
-        } catch (IOException e) {
-            System.out.println("Произошла ошибка во время создания файла");
-        }
-    }
-
-    private static void printAllTasks(TaskManager manager) {
-        System.out.println("_____Задачи_____");
-        for (Task task : manager.getAllTasksList()) {
-            System.out.println(task);
-        }
-        System.out.println("_____Эпики_____");
-        for (Task epic : manager.getAllEpicsList()) {
-            System.out.println(epic);
-
-            for (Task task : manager.getSubTasksOfEpicById(epic.getId())) {
-                System.out.println("--> " + task);
-            }
-        }
-        System.out.println("_____Подзадачи_____");
-        for (Task subtask : manager.getAllSubTasksList()) {
-            System.out.println(subtask);
-        }
     }
 }
