@@ -1,6 +1,7 @@
 package ru.yandex.practicum.model;
 
 import ru.yandex.practicum.service.Status;
+import ru.yandex.practicum.service.TaskType;
 
 import java.util.Objects;
 
@@ -55,6 +56,10 @@ public class Task {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public TaskType getTaskType() {
+        return TaskType.TASK;
     }
 
     @Override
