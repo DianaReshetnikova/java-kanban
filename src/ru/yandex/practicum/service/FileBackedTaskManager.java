@@ -7,6 +7,9 @@ import ru.yandex.practicum.model.Task;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /*
@@ -16,6 +19,7 @@ import java.util.List;
  */
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
     private final Path filePath;
+    private final static DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
 
     public FileBackedTaskManager(Path filePath) {
         this.filePath = filePath;
@@ -187,7 +191,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     private void save() {
         try (BufferedWriter bf = new BufferedWriter(new FileWriter(filePath.getFileName().toString()))) {
             StringBuilder sb = new StringBuilder();
-            sb.append("id,type,name,status,description,epic\n");
+            sb.append("id,type,name,status,description,startTime,duration,epic\n");
 
             for (var item : getAllTasksList())
                 sb.append(toString(item)).append("\n");
@@ -216,8 +220,18 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         sb.append(task.getStatus()).append(delimiter);
         sb.append(task.getDescription()).append(delimiter);
 
+        if (task.getStartTime().isPresent())
+            sb.append(task.getStartTime().get().format(DATE_TIME_FORMATTER));
+        sb.append(delimiter);
+
+        if (task.getDuration().isPresent())
+            sb.append(task.getDuration().get().toHoursPart())
+                    .append(":")
+                    .append(task.getDuration().get().toMinutesPart());
+        sb.append(delimiter);
+
         if (task instanceof SubTask)
-            sb.append(((SubTask) task).getEpicId());
+            sb.append(((SubTask) task).getEpicId()).append(delimiter);
 
         return sb.toString();
     }
@@ -231,14 +245,28 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         String name = splitArray[2];
         Status status = Status.valueOf(splitArray[3]);
         String description = splitArray[4];
+
+        LocalDateTime startTime = null;
+        if (splitArray.length == 6)
+            startTime = LocalDateTime.parse(splitArray[5], DATE_TIME_FORMATTER);
+
+        Duration duration = null;
+        if (splitArray.length == 7) {
+            String[] durationHoursAndMinutes = splitArray[6].split(":");
+            int hours = Integer.parseInt(durationHoursAndMinutes[0]);
+            int minutes = Integer.parseInt(durationHoursAndMinutes[1]);
+            duration = Duration.ofHours(hours).plusMinutes(minutes);
+        }
+
+
         int epicId = -1;
         if (taskType.equals(TaskType.SUBTASK))
-            epicId = Integer.parseInt(splitArray[5]);
+            epicId = Integer.parseInt(splitArray[7]);
 
         return switch (taskType) {
-            case EPIC -> new Epic(name, description, id, status);
-            case SUBTASK -> new SubTask(name, description, status, epicId, id);
-            case TASK -> new Task(name, description, status, id);
+            case EPIC -> new Epic(name, description, id, status, startTime, duration);
+            case SUBTASK -> new SubTask(name, description, status, epicId, id, startTime, duration);
+            case TASK -> new Task(name, description, status, id, startTime, duration);
         };
     }
 }
