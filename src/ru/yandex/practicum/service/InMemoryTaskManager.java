@@ -7,7 +7,6 @@ import ru.yandex.practicum.model.Task;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /* InMemoryTaskManager - класс-менеджер, хранит всю информацию о различных типах задач в оперативной памяти.
 Реализует методы интерфейса TaskManager.
