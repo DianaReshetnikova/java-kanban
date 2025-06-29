@@ -18,8 +18,8 @@ import java.util.List;
  * будет автоматически сохранять все задачи и их состояние в специальный файл в папке проекта.
  */
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
-    private final Path filePath;
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
+    private final Path filePath;
 
     public FileBackedTaskManager(Path filePath) {
         this.filePath = filePath;

@@ -99,13 +99,6 @@ public class Epic extends Task {
 
     @Override
     public Optional<LocalDateTime> getEndTime() {
-//        if (subTaskIds.isEmpty()) {
-//            Optional<LocalDateTime> endTimeCalculated = super.getEndTime();
-//            endTimeCalculated.ifPresent(localDateTime -> endTime = localDateTime);
-//
-//            return endTimeCalculated;
-//        } else return Optional.ofNullable(endTime);
-
         return Optional.ofNullable(endTime);
     }
 }
