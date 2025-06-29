@@ -5,6 +5,7 @@ import ru.yandex.practicum.model.SubTask;
 import ru.yandex.practicum.model.Task;
 
 import java.util.List;
+import java.util.TreeSet;
 
 /* TaskManager - интерфейс, содержащий список методов,
  позволяющих управлять различными типами задач (создание, хранение, измнение, удаление и пр.),
@@ -56,4 +57,6 @@ public interface TaskManager {
     List<SubTask> getSubTasksOfEpicById(int epicId);
 
     List<Task> getHistory();
+
+    TreeSet<Task> getPrioritizedTasks();
 }
