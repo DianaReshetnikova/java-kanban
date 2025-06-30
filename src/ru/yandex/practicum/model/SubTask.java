@@ -3,6 +3,9 @@ package ru.yandex.practicum.model;
 import ru.yandex.practicum.service.Status;
 import ru.yandex.practicum.service.TaskType;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 public class SubTask extends Task {
     private Integer epicId;
 
@@ -11,8 +14,18 @@ public class SubTask extends Task {
         this.epicId = epicId;
     }
 
+    public SubTask(String title, String description, Status status, int epicId, LocalDateTime startTime, Duration duration) {
+        super(title, description, status, startTime, duration);
+        this.epicId = epicId;
+    }
+
     public SubTask(String title, String description, Status status, int epicId, int id) {
         super(title, description, status, id);
+        this.epicId = epicId;
+    }
+
+    public SubTask(String title, String description, Status status, int epicId, int id, LocalDateTime startTime, Duration duration) {
+        super(title, description, status, id, startTime, duration);
         this.epicId = epicId;
     }
 

@@ -6,6 +6,10 @@ import ru.yandex.practicum.model.Epic;
 import ru.yandex.practicum.model.SubTask;
 import ru.yandex.practicum.model.Task;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,6 +19,7 @@ class InMemoryTaskManagerTest {
     private Task task1;
     private Epic epic1;
     private SubTask subTask1;
+    private SubTask subTask2;
 
     @BeforeEach
     void createTestEnvironment() {
@@ -26,6 +31,9 @@ class InMemoryTaskManagerTest {
 
         subTask1 = new SubTask("SubTask 1", "SubTask 1 description", Status.NEW, epic1.getId());
         taskManager.createSubTask(subTask1);
+
+        subTask2 = new SubTask("SubTask 2", "SubTask 2 description", Status.NEW, epic1.getId());
+        taskManager.createSubTask(subTask2);
     }
 
     //Task
@@ -74,6 +82,71 @@ class InMemoryTaskManagerTest {
     }
 
     //Epic
+    /*
+    Для расчёта статуса Epic. Граничные условия:
+     a. Все подзадачи со статусом NEW.
+     b. Все подзадачи со статусом DONE.
+     c. Подзадачи со статусами NEW и DONE.
+     d. Подзадачи со статусом IN_PROGRESS.
+    */
+    @Test
+    void shouldUpdateEpicStatus() {
+        taskManager.deleteAllTasks();
+        taskManager.deleteAllEpics();
+        taskManager.deleteAllSubTasks();
+
+        epic1 = new Epic("Epic 1", "Epic 1 description");
+        taskManager.createEpic(epic1);
+
+        subTask1 = new SubTask("SubTask 1", "SubTask 1 description", Status.NEW, epic1.getId());
+        taskManager.createSubTask(subTask1);
+
+        subTask2 = new SubTask("SubTask 2", "SubTask 2 description", Status.NEW, epic1.getId());
+        taskManager.createSubTask(subTask2);
+
+        epic1 = taskManager.getEpicById(epic1.getId());//получить обновленное актуальное значение из эпика
+        assertEquals(Status.NEW, epic1.getStatus());
+        assertEquals(Status.NEW, subTask1.getStatus());
+        assertEquals(Status.NEW, subTask2.getStatus());
+
+        //
+        SubTask taskDone1 = new SubTask(subTask1.getTitle(), subTask1.getDescription(), Status.DONE, epic1.getId(), subTask1.getId());
+        taskManager.updateSubTask(taskDone1);
+
+        SubTask taskDone2 = new SubTask(subTask2.getTitle(), subTask2.getDescription(), Status.DONE, epic1.getId(), subTask2.getId());
+        taskManager.updateSubTask(taskDone2);
+
+        epic1 = taskManager.getEpicById(epic1.getId());
+        assertEquals(Status.DONE, epic1.getStatus());
+        assertEquals(Status.DONE, taskDone1.getStatus());
+        assertEquals(Status.DONE, taskDone2.getStatus());
+
+
+        //
+        taskDone1 = new SubTask(subTask1.getTitle(), subTask1.getDescription(), Status.NEW, epic1.getId(), subTask1.getId());
+        taskManager.updateSubTask(taskDone1);
+
+        taskDone2 = new SubTask(subTask2.getTitle(), subTask2.getDescription(), Status.DONE, epic1.getId(), subTask2.getId());
+        taskManager.updateSubTask(taskDone2);
+
+        epic1 = taskManager.getEpicById(epic1.getId());
+        assertEquals(Status.IN_PROGRESS, epic1.getStatus());
+        assertEquals(Status.NEW, taskDone1.getStatus());
+        assertEquals(Status.DONE, taskDone2.getStatus());
+
+        //
+        taskDone1 = new SubTask(subTask1.getTitle(), subTask1.getDescription(), Status.IN_PROGRESS, epic1.getId(), subTask1.getId());
+        taskManager.updateSubTask(taskDone1);
+
+        taskDone2 = new SubTask(subTask2.getTitle(), subTask2.getDescription(), Status.IN_PROGRESS, epic1.getId(), subTask2.getId());
+        taskManager.updateSubTask(taskDone2);
+
+        epic1 = taskManager.getEpicById(epic1.getId());
+        assertEquals(Status.IN_PROGRESS, epic1.getStatus());
+        assertEquals(Status.IN_PROGRESS, taskDone1.getStatus());
+        assertEquals(Status.IN_PROGRESS, taskDone2.getStatus());
+    }
+
     @Test
     void shouldCreateEpicAndGetById() {
         Epic savedEpic = taskManager.getEpicById(epic1.getId());
@@ -132,7 +205,7 @@ class InMemoryTaskManagerTest {
 
         List<SubTask> arrSubTasks = taskManager.getAllSubTasksList();
         assertNotNull(arrSubTasks, "Список подзадач не возвращается");
-        assertEquals(1, arrSubTasks.size(), "Количество созданных подзадач должно быть = 1");
+        assertEquals(2, arrSubTasks.size(), "Количество созданных подзадач для epic1 должно быть = 2");
     }
 
     @Test
@@ -144,9 +217,6 @@ class InMemoryTaskManagerTest {
 
     @Test
     void shouldDeleteAllSubTasks() {
-        SubTask subTask2 = new SubTask("SubTask 2", "SubTask 2 description", Status.NEW, epic1.getId());
-        taskManager.createSubTask(subTask2);
-
         List<SubTask> arrSubTasks = taskManager.getAllSubTasksList();
         assertNotNull(arrSubTasks, "Список подзадач не возвращается");
         assertEquals(2, arrSubTasks.size(), "Количество подзадач не равно двум");
@@ -160,16 +230,94 @@ class InMemoryTaskManagerTest {
     void shouldDeleteFromEpics_DeletedSubTasksId() {
         var subTasksOfEpic1 = taskManager.getSubTasksOfEpicById(epic1.getId());
 
-        assertEquals(1, subTasksOfEpic1.size(), "У эпик1 должна быть одна подзадача");
+        assertEquals(2, subTasksOfEpic1.size(), "У эпик1 должно быть две подзадачи");
 
-        assertNotNull(subTasksOfEpic1.getFirst(), "У эпик1 должна быть подзадача != null");
+        assertNotNull(subTasksOfEpic1, "У эпик1 должен быть список подзадач != null");
 
-        assertEquals(subTask1, subTasksOfEpic1.getFirst(), "У эпик1 должна быть подзадача subTask1");
+        assertEquals(subTask1, subTasksOfEpic1.getFirst(), "У эпик1 первая должна быть подзадача subTask1");
+        assertEquals(subTask2, subTasksOfEpic1.getLast(), "У эпик1 вторая должна быть подзадача subTask2");
 
 
         taskManager.deleteSubTaskById(subTask1.getId());
+        taskManager.deleteSubTaskById(subTask2.getId());
+
         subTasksOfEpic1 = taskManager.getSubTasksOfEpicById(epic1.getId());
-        assertEquals(0, subTasksOfEpic1.size(), "У эпик1 не должно быть подзадачи");
+        assertEquals(0, subTasksOfEpic1.size(), "У эпик1 не должно быть подзадач");
     }
 
+
+    @Test
+    void twoTasksShouldOverlapOnIntervals() {
+        InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
+
+       Task task1 = new Task(
+                "Task 1",
+                "Task 1 description",
+                Status.NEW,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0)),
+                Duration.ofHours(2));
+        inMemoryTaskManager.createTask(task1);
+
+        Task task2 = new Task("Task 2",
+                "Task 2 description",
+                Status.NEW,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0)),
+                Duration.ofHours(1));
+        inMemoryTaskManager.createTask(task2);
+
+        assertFalse(inMemoryTaskManager.isTaskOverlapWithAnySavedTask(task1), "Первая созданная задача не должна иметь пересечений");
+        assertEquals(task1, inMemoryTaskManager.getTaskById(task1.getId()), "Должна быть возвращена задача task1");
+
+        assertNull(task2.getId(), "Идентификатор у task2 должен быть пустым, т.к. задача перекрывает другую");
+        assertTrue(inMemoryTaskManager.isTaskOverlapWithAnySavedTask(task2), "Вторая задача пересекается с первой");
+    }
+
+    @Test
+    void twoTaskShouldOverlapOnStartTime(){
+        InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
+
+        Task task1 = new Task(
+                "Task 1",
+                "Task 1 description",
+                Status.NEW,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0)),
+                Duration.ofHours(2));
+        inMemoryTaskManager.createTask(task1);
+
+        Task task2 = new Task("Task 2",
+                "Task 2 description",
+                Status.NEW,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0)),
+                null);
+        inMemoryTaskManager.createTask(task2);
+
+        assertNull(task2.getId(), "Идентификатор у task2 должен быть пустым, т.к. задача перекрывает другую");
+        assertTrue(inMemoryTaskManager.isTaskOverlapWithAnySavedTask(task2), "Вторая задача пересекается с первой");
+    }
+
+    @Test
+    void twoTaskShouldNotOverlap(){
+        InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
+
+        Task task1 = new Task(
+                "Task 1",
+                "Task 1 description",
+                Status.NEW,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0)),
+                Duration.ofHours(2));
+        inMemoryTaskManager.createTask(task1);
+
+        Task task2 = new Task("Task 2",
+                "Task 2 description",
+                Status.NEW,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 1)),
+                Duration.ofHours(1));
+        inMemoryTaskManager.createTask(task2);
+
+        assertEquals(task1, inMemoryTaskManager.getTaskById(task1.getId()));
+        assertEquals(task2, inMemoryTaskManager.getTaskById(task2.getId()));
+
+        assertFalse(inMemoryTaskManager.isTaskOverlapWithAnySavedTask(task1));
+        assertFalse(inMemoryTaskManager.isTaskOverlapWithAnySavedTask(task2));
+    }
 }
