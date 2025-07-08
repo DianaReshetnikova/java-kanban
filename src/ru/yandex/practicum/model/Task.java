@@ -36,7 +36,7 @@ public class Task {
         if (Optional.ofNullable(startTime).isEmpty())
             result += ", startTime=" + "-";
         else
-            result += ", startTime=" + startTime.format(DateTimeFormatter.ofPattern("dd.MM.yy HH:mm"));
+            result += ", startTime=" + startTime.format(DateTimeFormatter.ofPattern("dd.MM.yy HH:mm:ss"));
 
 
         if (Optional.ofNullable(duration).isEmpty())

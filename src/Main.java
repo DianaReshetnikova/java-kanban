@@ -4,11 +4,13 @@ import ru.yandex.practicum.model.SubTask;
 import ru.yandex.practicum.service.Managers;
 import ru.yandex.practicum.service.Status;
 import ru.yandex.practicum.service.TaskManager;
+import web_api.HttpTaskServer;
 
 public class Main {
 
     public static void main(String[] args) {
-        TaskManager taskManager = Managers.getDefault();
+
+        /*TaskManager taskManager = Managers.getDefault();
 
         Task task1 = new Task("Task 1", "Task 1 description", Status.NEW);
         task1 = taskManager.createTask(task1);
@@ -48,7 +50,7 @@ public class Main {
 
         printHistoryTasks(taskManager);
 
-        printAllTasks(taskManager);
+        printAllTasks(taskManager);*/
     }
 
     private static void printHistoryTasks(TaskManager manager) {

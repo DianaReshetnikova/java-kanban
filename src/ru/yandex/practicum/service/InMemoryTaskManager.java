@@ -1,5 +1,6 @@
 package ru.yandex.practicum.service;
 
+import exception.TaskOverlapException;
 import ru.yandex.practicum.model.Epic;
 import ru.yandex.practicum.model.SubTask;
 import ru.yandex.practicum.model.Task;
@@ -41,56 +42,68 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Task createTask(Task newTask) {
+    public Task createTask(Task newTask) throws TaskOverlapException {
         //метод должен вернуть false (задачи не перекрываются)
-        if (newTask != null && !isTaskOverlapWithAnySavedTask(newTask)) {
-            if (tasks.containsKey(newTask.getId()))
-                return newTask;
+        if (newTask != null) {
+            if (!isTaskOverlapWithAnySavedTask(newTask)) {
+                if (tasks.containsKey(newTask.getId()))
+                    return newTask;
 
-            //Задаем уникальный Id новой задаче
-            newTask.setId(++counterId);
-            tasks.put(newTask.getId(), newTask);
-            addTaskToPrioritizedSet(newTask);
+                //Задаем уникальный Id новой задаче
+                newTask.setId(++counterId);
+                tasks.put(newTask.getId(), newTask);
+                addTaskToPrioritizedSet(newTask);
+            } else {
+                throw new TaskOverlapException("Задачи пересекаются");
+            }
         }
 
         return newTask;
     }
 
     @Override
-    public Epic createEpic(Epic newEpic) {
-        if (newEpic != null && !isTaskOverlapWithAnySavedTask(newEpic)) {
-            if (epics.containsKey(newEpic.getId()))
-                return newEpic;
+    public Epic createEpic(Epic newEpic) throws TaskOverlapException {
+        if (newEpic != null) {
+            if (!isTaskOverlapWithAnySavedTask(newEpic)) {
+                if (epics.containsKey(newEpic.getId()))
+                    return newEpic;
 
-            newEpic.setId(++counterId);
-            updateEpicTime(newEpic);
+                newEpic.setId(++counterId);
+                updateEpicTime(newEpic);
 //            if (newEpic.getStartTime().isPresent() && newEpic.getDuration().isPresent())
 //                newEpic.setEndTime(newEpic.getStartTime().get().plus(newEpic.getDuration().get()));
 
-            addTaskToPrioritizedSet(newEpic);
+                addTaskToPrioritizedSet(newEpic);
+            } else {
+                throw new TaskOverlapException("Задачи пересекаются");
+            }
         }
 
         return newEpic;
     }
 
     @Override
-    public SubTask createSubTask(SubTask newSubTask) {
-        if (newSubTask != null && !isTaskOverlapWithAnySavedTask(newSubTask)) {
-            //Если сабтаск с Id уже сущ-ет в мапе, или указан эпик которого нет в мапе эпиков
-            //то возврат сабтаски
-            if (subTasks.containsKey(newSubTask.getId()) ||
-                    !epics.containsKey(newSubTask.getEpicId()))
-                return newSubTask;
+    public SubTask createSubTask(SubTask newSubTask) throws TaskOverlapException {
+        if (newSubTask != null) {
+            if (!isTaskOverlapWithAnySavedTask(newSubTask)) {
+                //Если сабтаск с Id уже сущ-ет в мапе, или указан эпик которого нет в мапе эпиков
+                //то возврат сабтаски
+                if (subTasks.containsKey(newSubTask.getId()) ||
+                        !epics.containsKey(newSubTask.getEpicId()))
+                    return newSubTask;
 
-            newSubTask.setId(++counterId);
-            subTasks.put(newSubTask.getId(), newSubTask);
-            addTaskToPrioritizedSet(newSubTask);
+                newSubTask.setId(++counterId);
+                subTasks.put(newSubTask.getId(), newSubTask);
+                addTaskToPrioritizedSet(newSubTask);
 
-            Epic epic = epics.get(newSubTask.getEpicId());
-            epic.setSubTask(newSubTask.getId());
+                Epic epic = epics.get(newSubTask.getEpicId());
+                epic.setSubTask(newSubTask.getId());
 
-            updateEpicStatus(epic);
-            updateEpicTime(epic);
+                updateEpicStatus(epic);
+                updateEpicTime(epic);
+            } else {
+                throw new TaskOverlapException("Задачи пересекаются");
+            }
         }
 
         return newSubTask;
@@ -98,51 +111,63 @@ public class InMemoryTaskManager implements TaskManager {
 
 
     @Override
-    public Task updateTask(Task newTask) {
-        if (newTask != null && !isTaskOverlapWithAnySavedTask(newTask)) {
-            if (!tasks.containsKey(newTask.getId()))
-                return newTask;
+    public Task updateTask(Task newTask) throws TaskOverlapException {
+        if (newTask != null) {
+            if (!isTaskOverlapWithAnySavedTask(newTask)) {
+                if (!tasks.containsKey(newTask.getId()))
+                    return newTask;
 
-            tasks.put(newTask.getId(), newTask);
-            addTaskToPrioritizedSet(newTask);
+                tasks.put(newTask.getId(), newTask);
+                addTaskToPrioritizedSet(newTask);
+            } else {
+                throw new TaskOverlapException("Задачи пересекаются");
+            }
         }
 
         return newTask;
     }
 
     @Override
-    public Epic updateEpic(Epic newEpic) {
-        if (newEpic != null && !isTaskOverlapWithAnySavedTask(newEpic)) {
-            if (!epics.containsKey(newEpic.getId()))
-                return newEpic;
+    public Epic updateEpic(Epic newEpic) throws TaskOverlapException {
+        if (newEpic != null) {
+            if (!isTaskOverlapWithAnySavedTask(newEpic)) {
+                if (!epics.containsKey(newEpic.getId()))
+                    return newEpic;
 
-            updateEpicStatus(newEpic);
-            epics.put(newEpic.getId(), newEpic);
+                updateEpicStatus(newEpic);
+                epics.put(newEpic.getId(), newEpic);
 
-            updateEpicTime(newEpic);
+                updateEpicTime(newEpic);
+            } else {
+                throw new TaskOverlapException("Задачи пересекаются");
+            }
         }
 
         return newEpic;
     }
 
     @Override
-    public SubTask updateSubTask(SubTask newSubTask) {
-        if (newSubTask != null && !isTaskOverlapWithAnySavedTask(newSubTask)) {
-            if (!subTasks.containsKey(newSubTask.getId()) ||
-                    !epics.containsKey(newSubTask.getEpicId()))
-                return newSubTask;
+    public SubTask updateSubTask(SubTask newSubTask) throws TaskOverlapException {
+        if (newSubTask != null) {
+            if (!isTaskOverlapWithAnySavedTask(newSubTask)) {
+                if (!subTasks.containsKey(newSubTask.getId()) ||
+                        !epics.containsKey(newSubTask.getEpicId()))
+                    return newSubTask;
 
-            subTasks.put(newSubTask.getId(), newSubTask);
-            addTaskToPrioritizedSet(newSubTask);
+                subTasks.put(newSubTask.getId(), newSubTask);
+                addTaskToPrioritizedSet(newSubTask);
 
-            Epic epic = epics.get(newSubTask.getEpicId());
-            epic.removeSubTaskById(newSubTask.getId());
-            epic.setSubTask(newSubTask.getId());
+                Epic epic = epics.get(newSubTask.getEpicId());
+                epic.removeSubTaskById(newSubTask.getId());
+                epic.setSubTask(newSubTask.getId());
 
-            updateEpicStatus(epic);
-            updateEpicTime(epic);
+                updateEpicStatus(epic);
+                updateEpicTime(epic);
 
-            epics.put(epic.getId(), epic);
+                epics.put(epic.getId(), epic);
+            } else {
+                throw new TaskOverlapException("Задачи пересекаются");
+            }
         }
 
         return newSubTask;
@@ -166,7 +191,7 @@ public class InMemoryTaskManager implements TaskManager {
 
 
     //В HistoryManager история об ныне удаленных задачах, эпиках и подзадачах хранится и не стирается
-    // думаю это логично, как логирование
+// думаю это логично, как логирование
     @Override
     public void deleteAllTasks() {
         tasks.clear();
@@ -184,7 +209,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     //очищаю мапу сабтасок
-    //прохожу по мапе эпиков и очищаю в каждом лист с Id сабтасок
+//прохожу по мапе эпиков и очищаю в каждом лист с Id сабтасок
     @Override
     public void deleteAllSubTasks() {
         subTasks.clear();
@@ -308,7 +333,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     //Метод, который будет проверять, пересекаются ли две задачи по времени выполнения, и возвращать true или false.
-    //Если перекрываются - true, иначе - false
+//Если перекрываются - true, иначе - false
     private boolean isTwoTasksOverlap(Task task1, Task task2) {
 
         //Для избежания сравнения старой сохраненной задачи в списке с новой обновленной
@@ -361,8 +386,9 @@ public class InMemoryTaskManager implements TaskManager {
             return false;
 
         for (var task : prioritizedTasks) {
-            if (isTwoTasksOverlap(targetTask, task))
+            if (isTwoTasksOverlap(targetTask, task)) {
                 return true;
+            }
         }
 
         return false;
