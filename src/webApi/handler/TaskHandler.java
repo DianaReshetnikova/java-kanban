@@ -1,4 +1,4 @@
-package web_api.handler;
+package webApi.handler;
 
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
@@ -8,8 +8,8 @@ import exception.NotFoundException;
 import exception.TaskOverlapException;
 import ru.yandex.practicum.model.Task;
 import ru.yandex.practicum.service.TaskManager;
-import web_api.BaseHttpHandler;
-import web_api.Endpoint;
+import webApi.BaseHttpHandler;
+import webApi.Endpoint;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,7 +71,7 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
 
     private void handlePostTask(HttpExchange exchange) throws IOException {
         InputStream inputStream = exchange.getRequestBody();
-        String jsonString = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
+        String jsonString = new String(inputStream.readAllBytes(), defaultCharset);
 
         //Сервер не обнаружил запрашиваемый контент
         if (jsonString.isEmpty() || jsonString.isBlank())

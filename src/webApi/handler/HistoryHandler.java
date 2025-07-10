@@ -1,10 +1,10 @@
-package web_api.handler;
+package webApi.handler;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import ru.yandex.practicum.service.TaskManager;
-import web_api.BaseHttpHandler;
-import web_api.Endpoint;
+import webApi.BaseHttpHandler;
+import webApi.Endpoint;
 
 import java.io.IOException;
 

@@ -1,4 +1,4 @@
-package web_api.handler;
+package webApi.handler;
 
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
@@ -6,19 +6,21 @@ import com.sun.net.httpserver.HttpHandler;
 import exception.IncorrectTaskException;
 import exception.NotFoundException;
 import exception.TaskOverlapException;
+import ru.yandex.practicum.model.Epic;
 import ru.yandex.practicum.model.SubTask;
 import ru.yandex.practicum.service.TaskManager;
-import web_api.BaseHttpHandler;
-import web_api.Endpoint;
+import webApi.BaseHttpHandler;
+import webApi.Endpoint;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Optional;
 
-public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
+public class EpicHandler extends BaseHttpHandler implements HttpHandler {
     private TaskManager taskManager;
 
-    public SubtaskHandler(TaskManager taskManager) {
+    public EpicHandler(TaskManager taskManager) {
         this.taskManager = taskManager;
     }
 
@@ -27,17 +29,20 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
         Endpoint endpoint = getEndpoint(exchange.getRequestURI().getPath(), exchange.getRequestMethod());
 
         switch (endpoint) {
-            case GET_SUBTASKS:
-                handleGetSubtasks(exchange);
+            case GET_EPICS:
+                handleGetEpics(exchange);
                 break;
-            case GET_SUBTASK_ID:
-                handleGetSubtaskId(exchange);
+            case GET_EPIC_ID:
+                handleGetEpicId(exchange);
                 break;
-            case POST_SUBTASK:
-                handlePostSubtask(exchange);
+            case POST_EPIC:
+                handlePostEpic(exchange);
                 break;
-            case DELETE_SUBTASK_ID:
-                handleDeleteSubtaskId(exchange);
+            case DELETE_EPIC_ID:
+                handleDeleteEpicId(exchange);
+                break;
+            case GET_SUBTASKS_OF_EPIC:
+                handleGetSubtasksOfEpic(exchange);
                 break;
             case UNKNOWN:
                 sendNoSuchEndpoint(exchange);
@@ -45,22 +50,37 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
         }
     }
 
-    private void handleGetSubtasks(HttpExchange exchange) throws IOException {
-        String jsonSubtasks = gson.toJson(taskManager.getAllSubTasksList());
-        send200(exchange, jsonSubtasks);
+    private void handleGetEpics(HttpExchange exchange) throws IOException {
+        String jsonEpics = gson.toJson(taskManager.getAllEpicsList());
+        send200(exchange, jsonEpics);
     }
 
-    private void handleGetSubtaskId(HttpExchange exchange) throws IOException {
-        Optional<Integer> subtaskIdOpt = getTaskId(exchange);
+    private void handleGetSubtasksOfEpic(HttpExchange exchange) throws IOException {
+        Optional<Integer> epicIdOpt = getTaskId(exchange);
 
-        if (subtaskIdOpt.isEmpty()) {
-            send400(exchange, "Передан некорректный идентификатор подзадачи");
-
+        if (epicIdOpt.isEmpty()) {
+            send400(exchange, "Передан некорректный идентификатор эпика");
         } else {
             try {
-                SubTask subtask = taskManager.getSubTaskById(subtaskIdOpt.get());
-                String jsonSubtask = gson.toJson(subtask);
-                send200(exchange, jsonSubtask);
+                List<SubTask> result = taskManager.getSubTasksOfEpicById(epicIdOpt.get());
+                String jsonEpic = gson.toJson(result);
+                send200(exchange, jsonEpic);
+            } catch (NotFoundException ex) {
+                send404NotFound(exchange, ex.getMessage());
+            }
+        }
+    }
+
+    private void handleGetEpicId(HttpExchange exchange) throws IOException {
+        Optional<Integer> epicIdOpt = getTaskId(exchange);
+
+        if (epicIdOpt.isEmpty()) {
+            send400(exchange, "Передан некорректный идентификатор эпика");
+        } else {
+            try {
+                Epic epic = taskManager.getEpicById(epicIdOpt.get());
+                String jsonEpic = gson.toJson(epic);
+                send200(exchange, jsonEpic);
             } catch (NotFoundException ex) {
                 send404NotFound(exchange, ex.getMessage());
             }
@@ -70,24 +90,24 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
            Если задача с указанным идентификатором не найдена, верните сообщение об этом с кодом 404. */
     }
 
-    private void handlePostSubtask(HttpExchange exchange) throws IOException {
+    private void handlePostEpic(HttpExchange exchange) throws IOException {
         InputStream inputStream = exchange.getRequestBody();
-        String jsonString = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
+        String jsonString = new String(inputStream.readAllBytes(), defaultCharset);
 
         //Сервер не обнаружил запрашиваемый контент
         if (jsonString.isEmpty() || jsonString.isBlank())
-            send400(exchange, "Передана пустая подзадача");
+            send400(exchange, "Передан пустой эпик");
 
         try {
-            SubTask subtaskFromJson = gson.fromJson(jsonString, SubTask.class);
+            Epic epicFromJson = gson.fromJson(jsonString, Epic.class);
 
             //Если в теле запроса задаче не был присвоен Id, пытаемся создать задачу
-            if (subtaskFromJson.getId() == null) {
-                taskManager.createSubTask(subtaskFromJson);
-                send201(exchange, "Подзадача добавлена");
+            if (epicFromJson.getId() == null) {
+                taskManager.createEpic(epicFromJson);
+                send201(exchange, "Эпик добавлен");
             } else {
-                taskManager.updateSubTask(subtaskFromJson);
-                send201(exchange, "Подзадача обновлена");
+                taskManager.updateEpic(epicFromJson);
+                send201(exchange, "Эпик обновлен");
             }
         } catch (IncorrectTaskException ex) {
             send400(exchange, ex.getMessage());
@@ -101,15 +121,15 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
         }
     }
 
-    private void handleDeleteSubtaskId(HttpExchange exchange) throws IOException {
-        Optional<Integer> subtaskIdOpt = getTaskId(exchange);
+    private void handleDeleteEpicId(HttpExchange exchange) throws IOException {
+        Optional<Integer> epicIdOpt = getTaskId(exchange);
 
-        if (subtaskIdOpt.isEmpty()) {
-            send400(exchange, "Передан некорректный идентификатор подзадачи");
+        if (epicIdOpt.isEmpty()) {
+            send400(exchange, "Передан некорректный идентификатор эпика");
         } else {
             try {
-                taskManager.deleteSubTaskById(subtaskIdOpt.get());
-                send200(exchange, "Подзадача удалена");
+                taskManager.deleteEpicById(epicIdOpt.get());
+                send200(exchange, "Эпик удален");
             } catch (NotFoundException ex) {
                 send404NotFound(exchange, ex.getMessage());
             }

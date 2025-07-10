@@ -1,9 +1,9 @@
-package web_api;
+package webApi;
 
 import com.sun.net.httpserver.HttpServer;
 import ru.yandex.practicum.service.Managers;
 import ru.yandex.practicum.service.TaskManager;
-import web_api.handler.*;
+import webApi.handler.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

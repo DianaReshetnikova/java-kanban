@@ -1,7 +1,7 @@
-package web_api;
+package webApi;
 
-import web_api.adapter.DurationAdapter;
-import web_api.adapter.LocalDateTimeAdapter;
+import webApi.adapter.DurationAdapter;
+import webApi.adapter.LocalDateTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
@@ -17,7 +17,7 @@ import java.util.Optional;
 //Чтобы не дублировать код, можно использовать общий для всех HTTP-обработчиков класс.
 //содержит общие методы для чтения и отправки данных
 public class BaseHttpHandler {
-    protected final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+    protected final Charset defaultCharset = StandardCharsets.UTF_8;
 
     protected Gson gson = new GsonBuilder()
             .setPrettyPrinting()
@@ -111,7 +111,7 @@ public class BaseHttpHandler {
 
         try (OutputStream os = exchange.getResponseBody()) {
             exchange.sendResponseHeaders(responseCode, 0);
-            os.write(responseString.getBytes(DEFAULT_CHARSET));
+            os.write(responseString.getBytes(defaultCharset));
         }
         exchange.close();
     }
