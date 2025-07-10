@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.junit.jupiter.api.*;
 import ru.yandex.practicum.model.Epic;
-import ru.yandex.practicum.model.SubTask;
 import ru.yandex.practicum.model.Task;
 import ru.yandex.practicum.service.Managers;
 import ru.yandex.practicum.service.Status;
@@ -33,42 +32,12 @@ class HttpTaskServerTest {
             .registerTypeAdapter(Duration.class, new DurationAdapter())
             .create();
 
-    private Epic epic;
-    private SubTask subtask1;
-    private SubTask subtask2;
-    private Task task1;
-    private Task task2;
-    private Task task3;
 
     HttpTaskServerTest() throws IOException {
-
     }
 
     @BeforeEach
     void setUp() throws IOException {
-        epic = new Epic("epic", "desc");
-        taskManager.createEpic(epic);
-
-        subtask1 = new SubTask("subtask 1", "description", Status.DONE, epic.getId(),
-                LocalDateTime.of(2025, 3, 2, 14, 20),
-                Duration.ofMinutes(30));
-        subtask2 = new SubTask("subtask 2", "subtask without time", Status.NEW, epic.getId());
-
-        task1 = new Task("task 1", "description", Status.NEW,
-                LocalDateTime.of(2025, 3, 5, 23, 45),
-                Duration.ofMinutes(30));
-        task2 = new Task("task 2", "description", Status.NEW,
-                LocalDateTime.of(2025, 3, 5, 15, 45),
-                Duration.ofMinutes(60));
-        task3 = new Task("task 3", "Task without time", Status.NEW);
-
-        taskManager.createSubTask(subtask1);
-        taskManager.createSubTask(subtask2);
-        taskManager.createTask(task1);
-        taskManager.createTask(task2);
-        taskManager.createTask(task3);
-        httpTaskServer = new HttpTaskServer(taskManager);
-
         httpTaskServer.startHttpServer();
     }
 
@@ -85,7 +54,6 @@ class HttpTaskServerTest {
 
     @Test
     public void testAddTask() throws IOException, InterruptedException {
-        httpTaskServer.stopHttpServer();
         clearManager();
 
         // создаём задачу
@@ -105,7 +73,7 @@ class HttpTaskServerTest {
         // вызываем рест, отвечающий за создание задач
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         // проверяем код ответа
-        assertEquals(200, response.statusCode());
+        assertEquals(201, response.statusCode());
 
         // проверяем, что создалась одна задача с корректным именем
         List<Task> tasksFromManager = taskManager.getAllTasksList();
@@ -117,17 +85,16 @@ class HttpTaskServerTest {
 
     @Test
     public void testAddEpic() throws IOException, InterruptedException {
-        clearManager();
-
         // создаём задачу
         Epic epic = new Epic("Test 2", "Testing task 2",
                 LocalDateTime.now(), Duration.ofMinutes(5));
+
         // конвертируем её в JSON
         String taskJson = gson.toJson(epic);
 
         // создаём HTTP-клиент и запрос
         HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8080/tasks");
+        URI url = URI.create("http://localhost:8080/epics");
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
                 .POST(HttpRequest.BodyPublishers.ofString(taskJson))
@@ -136,7 +103,7 @@ class HttpTaskServerTest {
         // вызываем рест, отвечающий за создание задач
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         // проверяем код ответа
-        assertEquals(200, response.statusCode());
+        assertEquals(201, response.statusCode());
 
         // проверяем, что создалась одна задача с корректным именем
         List<Epic> epicsFromManager = taskManager.getAllEpicsList();
@@ -186,6 +153,8 @@ class HttpTaskServerTest {
 
     @Test
     public void getEpics() throws IOException, InterruptedException {
+        clearManager();
+
         Epic epic1 = new Epic(
                 "Epic 1",
                 "Test epic 1 description",
@@ -218,5 +187,98 @@ class HttpTaskServerTest {
                 "Тело ответа от сервера должно совпадать со списком taskManager.getAllEpicsList()");
     }
 
+    @Test
+    public void shouldGetHistory() throws IOException, InterruptedException {
+        clearManager();
+
+        Task task1 = new Task(
+                "Task 1",
+                "Test task 1 description",
+                Status.NEW,
+                LocalDateTime.of(2025, 1, 1, 6, 0),
+                Duration.ofHours(1)
+        );
+        Epic epic1 = new Epic(
+                "Epic 1",
+                "Test epic 1 description",
+                LocalDateTime.of(2025, 1, 1, 8, 0),
+                Duration.ofHours(1)
+        );
+        Epic epic2 = new Epic(
+                "Epic 2",
+                "Test epic 2 description",
+                LocalDateTime.of(2025, 1, 2, 10, 0),
+                Duration.ofHours(1)
+        );
+
+        taskManager.createTask(task1);
+        taskManager.createEpic(epic1);
+        taskManager.createEpic(epic2);
+
+        taskManager.getTaskById(task1.getId());
+        taskManager.getEpicById(epic1.getId());
+        taskManager.getEpicById(epic2.getId());
+
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/history");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode(),
+                "Ожидался код 200 в процессе получения списка истории задач");
+
+        assertEquals(response.body(), gson.toJson(taskManager.getHistory()),
+                "Тело ответа от сервера должно совпадать со списком taskManager.getHistory()");
+    }
+
+    @Test
+    public void shouldGetPrioritized() throws IOException, InterruptedException {
+        clearManager();
+
+        Task task1 = new Task(
+                "Task 1",
+                "Test task 1 description",
+                Status.NEW,
+                LocalDateTime.of(2025, 1, 1, 6, 0),
+                Duration.ofHours(1)
+        );
+        Epic epic1 = new Epic(
+                "Epic 1",
+                "Test epic 1 description",
+                LocalDateTime.of(2025, 1, 1, 8, 0),
+                Duration.ofHours(1)
+        );
+        Epic epic2 = new Epic(
+                "Epic 2",
+                "Test epic 2 description",
+                LocalDateTime.of(2025, 1, 2, 10, 0),
+                Duration.ofHours(1)
+        );
+
+        taskManager.createTask(task1);
+        taskManager.createEpic(epic1);
+        taskManager.createEpic(epic2);
+
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/prioritized");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode(),
+                "Ожидался код 200 в процессе получения списка приоритетных задач");
+
+        var res = taskManager.getPrioritizedTasks();
+
+        assertEquals(response.body(), gson.toJson(taskManager.getPrioritizedTasks()),
+                "Тело ответа от сервера должно совпадать со списком taskManager.getPrioritizedTasks()");
+    }
 
 }
