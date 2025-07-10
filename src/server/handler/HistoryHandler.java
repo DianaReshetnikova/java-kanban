@@ -1,17 +1,17 @@
-package webApi.handler;
+package server.handler;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import ru.yandex.practicum.service.TaskManager;
-import webApi.BaseHttpHandler;
-import webApi.Endpoint;
+import server.BaseHttpHandler;
+import server.Endpoint;
 
 import java.io.IOException;
 
-public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
+public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
     private TaskManager taskManager;
 
-    public PrioritizedHandler(TaskManager taskManager) {
+    public HistoryHandler(TaskManager taskManager) {
         this.taskManager = taskManager;
     }
 
@@ -20,8 +20,8 @@ public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
         Endpoint endpoint = getEndpoint(exchange.getRequestURI().getPath(), exchange.getRequestMethod());
 
         switch (endpoint) {
-            case GET_PRIORITIZED:
-                handleGetPrioritized(exchange);
+            case GET_HISTORY:
+                handleGetHistory(exchange);
                 break;
             case UNKNOWN:
                 sendNoSuchEndpoint(exchange);
@@ -29,8 +29,8 @@ public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
         }
     }
 
-    private void handleGetPrioritized(HttpExchange exchange) throws IOException {
-        String jsonTasks = gson.toJson(taskManager.getPrioritizedTasks());
+    private void handleGetHistory(HttpExchange exchange) throws IOException {
+        String jsonTasks = gson.toJson(taskManager.getHistory());
         send200(exchange, jsonTasks);
     }
 }

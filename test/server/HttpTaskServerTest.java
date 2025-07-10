@@ -1,4 +1,4 @@
-package webApi;
+package server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -9,8 +9,8 @@ import ru.yandex.practicum.model.Task;
 import ru.yandex.practicum.service.Managers;
 import ru.yandex.practicum.service.Status;
 import ru.yandex.practicum.service.TaskManager;
-import webApi.adapter.DurationAdapter;
-import webApi.adapter.LocalDateTimeAdapter;
+import server.adapter.DurationAdapter;
+import server.adapter.LocalDateTimeAdapter;
 
 import java.io.IOException;
 import java.net.URI;

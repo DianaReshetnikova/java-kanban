@@ -1,7 +1,7 @@
-package webApi;
+package server;
 
-import webApi.adapter.DurationAdapter;
-import webApi.adapter.LocalDateTimeAdapter;
+import server.adapter.DurationAdapter;
+import server.adapter.LocalDateTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;

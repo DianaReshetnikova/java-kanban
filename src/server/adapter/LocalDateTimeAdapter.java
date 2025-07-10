@@ -1,4 +1,4 @@
-package webApi.adapter;
+package server.adapter;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;

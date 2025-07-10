@@ -1,4 +1,4 @@
-package webApi;
+package server;
 
 public enum Endpoint {
     //Tasks

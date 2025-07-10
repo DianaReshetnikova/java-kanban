@@ -1,4 +1,4 @@
-package webApi.handler;
+package server.handler;
 
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
@@ -8,8 +8,8 @@ import exception.NotFoundException;
 import exception.TaskOverlapException;
 import ru.yandex.practicum.model.Task;
 import ru.yandex.practicum.service.TaskManager;
-import webApi.BaseHttpHandler;
-import webApi.Endpoint;
+import server.BaseHttpHandler;
+import server.Endpoint;
 
 import java.io.IOException;
 import java.io.InputStream;
