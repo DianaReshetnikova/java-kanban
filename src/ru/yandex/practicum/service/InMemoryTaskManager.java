@@ -28,7 +28,7 @@ public class InMemoryTaskManager implements TaskManager {
         tasks = new HashMap<>();
         epics = new HashMap<>();
         subTasks = new HashMap<>();
-        prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::GET_START_TIME));
+        prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTimeValue));
 
         //(task1, task2) -> {
 //            if (task1.getStartTime().isPresent() && task2.getStartTime().isPresent())

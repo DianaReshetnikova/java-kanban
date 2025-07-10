@@ -159,7 +159,7 @@ public class Task implements Comparable<Task> {
         return startTime.compareTo(task.startTime);
     }
 
-    public LocalDateTime GET_START_TIME() {
+    public LocalDateTime getStartTimeValue() {
         return startTime;
     }
 }
