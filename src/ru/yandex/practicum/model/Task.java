@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
 
-public class Task {
+public class Task implements Comparable<Task> {
 
     protected Integer id;
     protected String title;
@@ -144,11 +144,22 @@ public class Task {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         Task task = (Task) object;
-        return Objects.equals(id, task.id);
+        return Objects.equals(id, task.id) && Objects.equals(title, task.title) && Objects.equals(description, task.description)
+                && Objects.equals(status, task.status) && Objects.equals(startTime, task.startTime) &&
+                Objects.equals(duration, task.duration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(id, title, description, status, startTime, duration);
+    }
+
+    @Override
+    public int compareTo(Task task) {
+        return startTime.compareTo(task.startTime);
+    }
+
+    public LocalDateTime GET_START_TIME() {
+        return startTime;
     }
 }

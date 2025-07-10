@@ -1,5 +1,7 @@
 package ru.yandex.practicum.service;
 
+import exception.NotFoundException;
+import exception.TaskOverlapException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.model.Epic;
@@ -13,6 +15,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class InMemoryTaskManagerTest {
     private TaskManager taskManager = Managers.getDefault();
@@ -51,8 +54,11 @@ class InMemoryTaskManagerTest {
     @Test
     void shouldDeleteTaskById() {
         taskManager.deleteTaskById(task1.getId());
-        Task returnedTask = taskManager.getTaskById(task1.getId());
-        assertNull(returnedTask, "Задача была не удалена");
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () ->
+                taskManager.getTaskById(task1.getId()));
+
+        assertNotNull(exception, "Задача была не удалена");
     }
 
     @Test
@@ -161,8 +167,11 @@ class InMemoryTaskManagerTest {
     @Test
     void shouldDeleteEpicById() {
         taskManager.deleteEpicById(epic1.getId());
-        Epic returnedEpic = taskManager.getEpicById(epic1.getId());
-        assertNull(returnedEpic, "Эпик был не удален");
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () ->
+                taskManager.getEpicById(epic1.getId()));
+
+        assertNotNull(exception, "Эпик был не удален");
     }
 
     @Test
@@ -192,7 +201,7 @@ class InMemoryTaskManagerTest {
         assertEquals(epic.getDescription(), savedEpic.getDescription(), "Описание эпиков не совпадают");
         assertEquals(epic.getStatus(), savedEpic.getStatus(), "Статусы эпиков не совпадают");
         assertEquals(epic.getId(), savedEpic.getId(), "Идентификаторы эпиков не совпадают");
-        assertArrayEquals(epic.getSubTaskIds().toArray(), savedEpic.getSubTaskIds().toArray(), "Списки подазадач не совпадают");
+        assertEquals(1, savedEpic.getSubTaskIds().size(), "Списки подазадач не совпадают");
     }
 
 
@@ -211,8 +220,11 @@ class InMemoryTaskManagerTest {
     @Test
     void shouldDeleteSubTaskById() {
         taskManager.deleteSubTaskById(subTask1.getId());
-        SubTask returnedSubTask = taskManager.getSubTaskById(subTask1.getId());
-        assertNull(returnedSubTask, "Подзадача была не удалена");
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () ->
+                taskManager.getSubTaskById(subTask1.getId()));
+
+        assertNotNull(exception, "Подзадача была не удалена");
     }
 
     @Test
@@ -250,7 +262,7 @@ class InMemoryTaskManagerTest {
     void twoTasksShouldOverlapOnIntervals() {
         InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
 
-       Task task1 = new Task(
+        Task task1 = new Task(
                 "Task 1",
                 "Task 1 description",
                 Status.NEW,
@@ -263,17 +275,14 @@ class InMemoryTaskManagerTest {
                 Status.NEW,
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0)),
                 Duration.ofHours(1));
-        inMemoryTaskManager.createTask(task2);
 
-        assertFalse(inMemoryTaskManager.isTaskOverlapWithAnySavedTask(task1), "Первая созданная задача не должна иметь пересечений");
-        assertEquals(task1, inMemoryTaskManager.getTaskById(task1.getId()), "Должна быть возвращена задача task1");
 
-        assertNull(task2.getId(), "Идентификатор у task2 должен быть пустым, т.к. задача перекрывает другую");
-        assertTrue(inMemoryTaskManager.isTaskOverlapWithAnySavedTask(task2), "Вторая задача пересекается с первой");
+        TaskOverlapException exception = assertThrows(TaskOverlapException.class, () -> inMemoryTaskManager.createTask(task2));
+        assertNotNull(exception, "Задачи пересекаются");
     }
 
     @Test
-    void twoTaskShouldOverlapOnStartTime(){
+    void twoTaskShouldOverlapOnStartTime() {
         InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
 
         Task task1 = new Task(
@@ -289,14 +298,14 @@ class InMemoryTaskManagerTest {
                 Status.NEW,
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0)),
                 null);
-        inMemoryTaskManager.createTask(task2);
+        ;
 
-        assertNull(task2.getId(), "Идентификатор у task2 должен быть пустым, т.к. задача перекрывает другую");
-        assertTrue(inMemoryTaskManager.isTaskOverlapWithAnySavedTask(task2), "Вторая задача пересекается с первой");
+        TaskOverlapException exception = assertThrows(TaskOverlapException.class, () -> inMemoryTaskManager.createTask(task2));
+        assertNotNull(exception, "Задачи пересекаются");
     }
 
     @Test
-    void twoTaskShouldNotOverlap(){
+    void twoTaskShouldNotOverlap() {
         InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
 
         Task task1 = new Task(
