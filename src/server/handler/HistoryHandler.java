@@ -33,4 +33,13 @@ public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
         String jsonTasks = gson.toJson(taskManager.getHistory());
         send200(exchange, jsonTasks);
     }
+
+    private Endpoint getEndpoint(String requestPath, String requestMethod) {
+        String[] pathParts = requestPath.split("/");
+
+        if (requestMethod.equals("GET") && pathParts.length == 2 && pathParts[1].equals("history")) {
+            return Endpoint.GET_HISTORY;
+        }
+        return Endpoint.UNKNOWN;
+    }
 }

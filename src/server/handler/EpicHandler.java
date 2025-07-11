@@ -138,4 +138,22 @@ public class EpicHandler extends BaseHttpHandler implements HttpHandler {
            Если запрос был составлен неверно, верните сообщение об ошибке с кодом 400.
            Если задача с указанным идентификатором не найден, верните сообщение об этом с кодом 404. */
     }
+
+    private Endpoint getEndpoint(String requestPath, String requestMethod) {
+        String[] pathParts = requestPath.split("/");
+
+        if (requestMethod.equals("GET") && pathParts.length == 2 && pathParts[1].equals("epics")) {
+            return Endpoint.GET_EPICS;
+        } else if (requestMethod.equals("GET") && pathParts.length == 3 && pathParts[1].equals("epics")) {
+            return Endpoint.GET_EPIC_ID;
+        } else if (requestMethod.equals("GET") && pathParts.length == 4 && pathParts[1].equals("epics") && pathParts[3].equals("subtasks")) {
+            return Endpoint.GET_SUBTASKS_OF_EPIC;
+        } else if (requestMethod.equals("POST") && pathParts.length == 2 && pathParts[1].equals("epics")) {
+            return Endpoint.POST_EPIC;
+        } else if (requestMethod.equals("DELETE") && pathParts.length == 3 && pathParts[1].equals("epics")) {
+            return Endpoint.DELETE_EPIC_ID;
+        }
+
+        return Endpoint.UNKNOWN;
+    }
 }

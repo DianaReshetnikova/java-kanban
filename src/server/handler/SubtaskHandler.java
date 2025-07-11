@@ -118,4 +118,20 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
            Если запрос был составлен неверно, верните сообщение об ошибке с кодом 400.
            Если задача с указанным идентификатором не найден, верните сообщение об этом с кодом 404. */
     }
+
+    private Endpoint getEndpoint(String requestPath, String requestMethod) {
+        String[] pathParts = requestPath.split("/");
+
+        if (requestMethod.equals("GET") && pathParts.length == 2 && pathParts[1].equals("subtasks")) {
+            return Endpoint.GET_SUBTASKS;
+        } else if (requestMethod.equals("GET") && pathParts.length == 3 && pathParts[1].equals("subtasks")) {
+            return Endpoint.GET_SUBTASK_ID;
+        } else if (requestMethod.equals("POST") && pathParts.length == 2 && pathParts[1].equals("subtasks")) {
+            return Endpoint.POST_SUBTASK;
+        } else if (requestMethod.equals("DELETE") && pathParts.length == 3 && pathParts[1].equals("subtasks")) {
+            return Endpoint.DELETE_SUBTASK_ID;
+        }
+
+        return Endpoint.UNKNOWN;
+    }
 }

@@ -118,4 +118,20 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
            Если запрос был составлен неверно, верните сообщение об ошибке с кодом 400.
            Если пост с указанным идентификатором не найден, верните сообщение об этом с кодом 404. */
     }
+
+    private Endpoint getEndpoint(String requestPath, String requestMethod) {
+        String[] pathParts = requestPath.split("/");
+
+        if (requestMethod.equals("GET") && pathParts.length == 2 && pathParts[1].equals("tasks")) {
+            return Endpoint.GET_TASKS;
+        } else if (requestMethod.equals("GET") && pathParts.length == 3 && pathParts[1].equals("tasks")) {
+            return Endpoint.GET_TASK_ID;
+        } else if (requestMethod.equals("POST") && pathParts.length == 2 && pathParts[1].equals("tasks")) {
+            return Endpoint.POST_TASK;
+        } else if (requestMethod.equals("DELETE") && pathParts.length == 3 && pathParts[1].equals("tasks")) {
+            return Endpoint.DELETE_TASK_ID;
+        }
+
+        return Endpoint.UNKNOWN;
+    }
 }

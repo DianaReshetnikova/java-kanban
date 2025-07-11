@@ -33,4 +33,14 @@ public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
         String jsonTasks = gson.toJson(taskManager.getPrioritizedTasks());
         send200(exchange, jsonTasks);
     }
+
+    private Endpoint getEndpoint(String requestPath, String requestMethod) {
+        String[] pathParts = requestPath.split("/");
+
+        if (requestMethod.equals("GET") && pathParts.length == 2 && pathParts[1].equals("prioritized")) {
+            return Endpoint.GET_PRIORITIZED;
+        }
+
+        return Endpoint.UNKNOWN;
+    }
 }

@@ -90,13 +90,11 @@ public class InMemoryTaskManager implements TaskManager {
             if (!isTaskOverlapWithAnySavedTask(newSubTask)) {
                 newSubTask.setId(++counterId);
                 subTasks.put(newSubTask.getId(), newSubTask);
-
                 addTaskToPrioritizedSet(newSubTask);
 
                 Epic epic = epics.get(newSubTask.getEpicId());
                 epic.setSubTask(newSubTask.getId());
                 removeTaskFromPrioritizedSet(epic);
-
                 updateEpicStatus(epic);
                 updateEpicTime(epic);
             } else {
@@ -144,7 +142,7 @@ public class InMemoryTaskManager implements TaskManager {
                 removeTaskFromPrioritizedSet(oldEpic);
 
                 updateEpicStatus(newEpic);
-                epics.put(newEpic.getId(), newEpic);
+                epics.put(newEpic.getId(), newEpic);//вроде можно убрать - доработать!
 
                 updateEpicTime(newEpic);
             } else {
