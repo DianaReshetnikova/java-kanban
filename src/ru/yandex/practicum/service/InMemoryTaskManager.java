@@ -28,15 +28,10 @@ public class InMemoryTaskManager implements TaskManager {
         tasks = new HashMap<>();
         epics = new HashMap<>();
         subTasks = new HashMap<>();
-        prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTimeValue));
-
-        //(task1, task2) -> {
-//            if (task1.getStartTime().isPresent() && task2.getStartTime().isPresent())
-//                if (task1.getStartTime().get().isAfter(task2.getStartTime().get()))
-//                    return 1;
-//                else return -1;
-//            return 0;//задач у которых не задано Время старта здесь не должно быть по ТЗ
-//        }
+        prioritizedTasks = new TreeSet<>(
+                Comparator.comparing(Task::getId)
+                        .thenComparing(Task::getStartTimeValue)
+        );
         counterId = 0;
     }
 
@@ -95,10 +90,12 @@ public class InMemoryTaskManager implements TaskManager {
             if (!isTaskOverlapWithAnySavedTask(newSubTask)) {
                 newSubTask.setId(++counterId);
                 subTasks.put(newSubTask.getId(), newSubTask);
-//                addTaskToPrioritizedSet(newSubTask);
+
+                addTaskToPrioritizedSet(newSubTask);
 
                 Epic epic = epics.get(newSubTask.getEpicId());
                 epic.setSubTask(newSubTask.getId());
+                removeTaskFromPrioritizedSet(epic);
 
                 updateEpicStatus(epic);
                 updateEpicTime(epic);
@@ -123,13 +120,10 @@ public class InMemoryTaskManager implements TaskManager {
                     return newTask;
 
                 Task oldTask = tasks.get(newTask.getId());
-
                 tasks.put(newTask.getId(), newTask);
-
                 //удалить старую задачу из приоритетных и записать новую
                 removeTaskFromPrioritizedSet(oldTask);
                 addTaskToPrioritizedSet(newTask);
-
             } else {
                 throw new TaskOverlapException("Задачи пересекаются");
             }
@@ -177,13 +171,14 @@ public class InMemoryTaskManager implements TaskManager {
                 Epic epic = epics.get(newSubTask.getEpicId());
                 epic.removeSubTaskById(newSubTask.getId());
                 epic.setSubTask(newSubTask.getId());
+                removeTaskFromPrioritizedSet(epic);
 
                 updateEpicStatus(epic);
                 updateEpicTime(epic);
 
                 //удалить старую задачу из приоритетных и записать новую
-//                removeTaskFromPrioritizedSet(oldSubtask);
-//                addTaskToPrioritizedSet(newSubTask);
+                removeTaskFromPrioritizedSet(oldSubtask);
+                addTaskToPrioritizedSet(newSubTask);
             } else {
                 throw new TaskOverlapException("Подзадачи пересекаются");
             }
@@ -335,6 +330,7 @@ public class InMemoryTaskManager implements TaskManager {
 
             Epic epic = epics.get(subTask.getEpicId());
             if (epic != null) {
+                removeTaskFromPrioritizedSet(epic);
                 epic.removeSubTaskById(subTask.getId());
                 updateEpicStatus(epic);
                 updateEpicTime(epic);
@@ -375,8 +371,7 @@ public class InMemoryTaskManager implements TaskManager {
 //Если перекрываются - true, иначе - false
     private boolean isTwoTasksOverlap(Task task1, Task task2) {
 
-        if (task1 instanceof SubTask) {
-            SubTask subTask = (SubTask) task1;
+        if (task1 instanceof SubTask subTask) {
             if (Objects.equals(subTask.getEpicId(), task2.getId()))
                 return false;
         }
@@ -551,6 +546,7 @@ public class InMemoryTaskManager implements TaskManager {
 
         //заменяем в списке эпиков старое значение
         epics.put(epic.getId(), newEpic);
+
         //добавляем в список приоритетных задач новый обновленный эпик
         addTaskToPrioritizedSet(newEpic);
     }
