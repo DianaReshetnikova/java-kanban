@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
 
-public class Task {
+public class Task implements Comparable<Task> {
 
     protected Integer id;
     protected String title;
@@ -36,7 +36,7 @@ public class Task {
         if (Optional.ofNullable(startTime).isEmpty())
             result += ", startTime=" + "-";
         else
-            result += ", startTime=" + startTime.format(DateTimeFormatter.ofPattern("dd.MM.yy HH:mm"));
+            result += ", startTime=" + startTime.format(DateTimeFormatter.ofPattern("dd.MM.yy HH:mm:ss"));
 
 
         if (Optional.ofNullable(duration).isEmpty())
@@ -150,5 +150,14 @@ public class Task {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public int compareTo(Task task) {
+        return startTime.compareTo(task.startTime);
+    }
+
+    public LocalDateTime getStartTimeValue() {
+        return startTime;
     }
 }
